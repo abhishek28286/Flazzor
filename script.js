@@ -183,7 +183,7 @@ async function showModularCategories() {
   }
 
   document.getElementById("photoGrid").innerHTML =
-    `<div class="grid">${cards.join("")}</div>`;
+    `<div class="modular-grid">${cards.join("")}</div>`;
 }
 
 /* Gallery */
