@@ -146,13 +146,7 @@ async function initHome() {
 
   document.getElementById("categoryGrid").innerHTML = cards.join("");
 
-  const hero =
-    data.find(c => c.slug === "wardrobe") ||
-    data.find(c => c.images?.length);
 
-  if (hero?.images?.[0]) {
-    document.getElementById("heroImage").src = hero.images[0].src;
-  }
 }
 
 /* Create a sub-category card */
