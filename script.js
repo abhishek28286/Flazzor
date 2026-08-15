@@ -155,7 +155,7 @@ async function modularSubCard(item) {
   const first = imgs[0]?.src;
 
   const img = first
-    ? `<img class="card-img" src="${first}" alt="${esc(item.title)}">`
+    ? ? `<img class="card-img" style="width:100%;height:260px;object-fit:cover;" src="${first}" alt="${esc(item.title)}">`
     : `<div class="card-img" style="display:grid;place-items:center;background:#ececf5;">
          <span>${esc(item.title)}</span>
        </div>`;
@@ -183,7 +183,9 @@ async function showModularCategories() {
   }
 
   document.getElementById("photoGrid").innerHTML =
-    `<div class="modular-grid">${cards.join("")}</div>`;
+  `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;width:100%;">
+    ${cards.join("")}
+  </div>`;
 }
 
 /* Gallery */
