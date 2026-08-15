@@ -46,7 +46,8 @@ async function loadData() {
 /* Read all images directly from a GitHub folder */
 async function getFolderImages(folder) {
   try {
-    const url = REPO_API +
+    const url =
+      REPO_API +
       "images/modular-kitchen/" +
       encodeURIComponent(folder);
 
@@ -92,11 +93,14 @@ function normalCategoryCard(c) {
   return `
     <article class="card"
       onclick="location.href='gallery.html?cat=${encodeURIComponent(c.slug)}'">
+
       ${img}
+
       <div class="card-body">
         <h3>${esc(c.title)}</h3>
         <p>${esc(c.desc || "")}</p>
       </div>
+
     </article>
   `;
 }
@@ -107,6 +111,7 @@ async function modularCategoryCard() {
 
   for (const item of modularFolders) {
     const imgs = await getFolderImages(item.folder);
+
     if (imgs.length) {
       first = imgs[0].src;
       break;
@@ -122,40 +127,46 @@ async function modularCategoryCard() {
   return `
     <article class="card"
       onclick="location.href='gallery.html?cat=modular-kitchen'">
+
       ${img}
+
       <div class="card-body">
         <h3>Modular Kitchen</h3>
         <p>Explore Acrylic, Laminated Kitchen and Accessories.</p>
       </div>
+
     </article>
   `;
 }
 
+/* Home Page */
 async function initHome() {
   const data = await loadData();
 
   const cards = [];
 
   for (const c of data) {
+
     if (c.slug === "modular-kitchen") {
       cards.push(await modularCategoryCard());
     } else {
       cards.push(normalCategoryCard(c));
     }
+
   }
 
-  document.getElementById("categoryGrid").innerHTML = cards.join("");
-
-
+  document.getElementById("categoryGrid").innerHTML =
+    cards.join("");
 }
 
-/* Create a sub-category card */
+/* Create Modular Kitchen sub-category card */
 async function modularSubCard(item) {
+
   const imgs = await getFolderImages(item.folder);
   const first = imgs[0]?.src;
 
   const img = first
-    ? ? `<img class="card-img" style="width:100%;height:260px;object-fit:cover;" src="${first}" alt="${esc(item.title)}">`
+    ? `<img class="card-img" src="${first}" alt="${esc(item.title)}">`
     : `<div class="card-img" style="display:grid;place-items:center;background:#ececf5;">
          <span>${esc(item.title)}</span>
        </div>`;
@@ -164,18 +175,22 @@ async function modularSubCard(item) {
     <article class="card"
       onclick="location.href='gallery.html?cat=${encodeURIComponent(
         "modular-kitchen/" + item.folder
-      )}'">
+      )}">
+
       ${img}
+
       <div class="card-body">
         <h3>${esc(item.title)}</h3>
         <p>${esc(item.desc)}</p>
       </div>
+
     </article>
   `;
 }
 
 /* Show Modular Kitchen sub-categories */
 async function showModularCategories() {
+
   const cards = [];
 
   for (const item of modularFolders) {
@@ -183,21 +198,26 @@ async function showModularCategories() {
   }
 
   document.getElementById("photoGrid").innerHTML =
-  `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;width:100%;">
-    ${cards.join("")}
-  </div>`;
+    `<div class="modular-grid">${cards.join("")}</div>`;
 }
 
 /* Gallery */
 async function initGallery() {
+
   const data = await loadData();
 
   const params = new URLSearchParams(location.search);
-  const slug = params.get("cat") || "wardrobe";
+
+  const slug =
+    params.get("cat") || "wardrobe";
+
 
   /* Modular Kitchen main page */
+
   if (slug === "modular-kitchen") {
-    document.title = "Modular Kitchen | Flazzor Interiors";
+
+    document.title =
+      "Modular Kitchen | Flazzor Interiors";
 
     document.getElementById("gTitle").textContent =
       "Modular Kitchen";
@@ -206,26 +226,38 @@ async function initGallery() {
       "Choose your preferred kitchen finish or explore our accessories.";
 
     await showModularCategories();
+
     return;
   }
 
-  /* Individual Modular Kitchen folder */
-  if (slug.startsWith("modular-kitchen/")) {
-    const folder = slug.split("/")[1];
 
-    const item = modularFolders.find(
-      x => x.folder === folder
-    );
+  /* Individual Modular Kitchen folder */
+
+  if (slug.startsWith("modular-kitchen/")) {
+
+    const folder =
+      slug.split("/")[1];
+
+    const item =
+      modularFolders.find(
+        x => x.folder === folder
+      );
 
     if (!item) {
+
       document.getElementById("gTitle").textContent =
         "Gallery";
+
       document.getElementById("gDesc").textContent =
         "Category not found.";
+
       return;
     }
 
-    const images = await getFolderImages(folder);
+
+    const images =
+      await getFolderImages(folder);
+
 
     document.title =
       `${item.title} | Flazzor Interiors`;
@@ -236,36 +268,53 @@ async function initGallery() {
     document.getElementById("gDesc").textContent =
       item.desc;
 
+
     if (!images.length) {
+
       document.getElementById("photoGrid").innerHTML =
-        `<div class="empty">Photos for this category are coming soon.</div>`;
+        `<div class="empty">
+          Photos for this category are coming soon.
+        </div>`;
+
       return;
     }
 
+
     current = images;
+
 
     document.getElementById("photoGrid").innerHTML =
       images.map((im, i) => `
+
         <article class="photo"
           onclick="openLightbox(${i})">
-          <img loading="lazy"
+
+          <img
+            loading="lazy"
             src="${im.src}"
             alt="${esc(item.title)} Design ${i + 1}">
+
           <div class="cap">
             ${esc(item.title)} Design ${i + 1}
           </div>
+
         </article>
+
       `).join("");
 
     return;
   }
 
+
   /* Existing data.json galleries */
+
   const c =
     data.find(x => x.slug === slug) ||
     data[0];
 
-  document.title = `${c.title} | Flazzor Interiors`;
+
+  document.title =
+    `${c.title} | Flazzor Interiors`;
 
   document.getElementById("gTitle").textContent =
     c.title;
@@ -273,35 +322,56 @@ async function initGallery() {
   document.getElementById("gDesc").textContent =
     c.desc || "";
 
+
   if (!c.images?.length) {
+
     document.getElementById("photoGrid").innerHTML =
-      `<div class="empty">Photos for this category are coming soon.</div>`;
+      `<div class="empty">
+        Photos for this category are coming soon.
+      </div>`;
+
     return;
   }
 
+
   current = c.images;
+
 
   document.getElementById("photoGrid").innerHTML =
     c.images.map((im, i) => `
+
       <article class="photo"
         onclick="openLightbox(${i})">
-        <img loading="lazy"
+
+        <img
+          loading="lazy"
           src="${im.src}"
           alt="${esc(c.title)} Design ${i + 1}">
+
         <div class="cap">
-          ${esc(im.caption || c.title + " Design " + (i + 1))}
+          ${esc(
+            im.caption ||
+            c.title + " Design " + (i + 1)
+          )}
         </div>
+
       </article>
+
     `).join("");
 }
 
+
 /* Lightbox */
+
 function openLightbox(i) {
+
   currentIndex = i;
 
-  const img = document.getElementById("lbImg");
+  const img =
+    document.getElementById("lbImg");
 
-  img.src = current[i].src;
+  img.src =
+    current[i].src;
 
   const lightbox =
     document.getElementById("lightbox");
@@ -309,23 +379,30 @@ function openLightbox(i) {
   lightbox.classList.add("show");
 }
 
+
 function closeLightbox() {
+
   document
     .getElementById("lightbox")
     .classList.remove("show");
 }
 
+
 function nextImg() {
+
   if (!current.length) return;
 
   currentIndex =
-    (currentIndex + 1) % current.length;
+    (currentIndex + 1) %
+    current.length;
 
   document.getElementById("lbImg").src =
     current[currentIndex].src;
 }
 
+
 function prevImg() {
+
   if (!current.length) return;
 
   currentIndex =
@@ -336,22 +413,38 @@ function prevImg() {
     current[currentIndex].src;
 }
 
+
 /* Keyboard controls */
+
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") closeLightbox();
-  if (e.key === "ArrowRight") nextImg();
-  if (e.key === "ArrowLeft") prevImg();
+
+  if (e.key === "Escape")
+    closeLightbox();
+
+  if (e.key === "ArrowRight")
+    nextImg();
+
+  if (e.key === "ArrowLeft")
+    prevImg();
+
 });
+
 
 /* Prevent direct image saving */
+
 document.addEventListener("contextmenu", e => {
+
   if (e.target.tagName === "IMG") {
     e.preventDefault();
   }
+
 });
 
+
 document.addEventListener("dragstart", e => {
+
   if (e.target.tagName === "IMG") {
     e.preventDefault();
   }
+
 });
