@@ -448,3 +448,92 @@ document.addEventListener("dragstart", e => {
   }
 
 });
+
+
+/* ================= GET YOUR QUOTE ================= */
+function openQuoteModal(){
+  const m=document.getElementById("quoteModal");
+  if(!m) return;
+  m.classList.add("show");
+  m.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeQuoteModal(){
+  const m=document.getElementById("quoteModal");
+  if(!m) return;
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+document.addEventListener("change",function(e){
+  const input=e.target;
+  if(input.matches(".quote-upload input[type=file]")){
+    const label=input.closest(".quote-upload");
+    if(input.files && input.files.length){
+      label.classList.add("has-file");
+      label.querySelector(".upload-icon").textContent="✓";
+      label.querySelector("small").textContent=input.files[0].name.length>17?input.files[0].name.slice(0,15)+"…":input.files[0].name;
+    }
+  }
+});
+async function submitQuote(e){
+  e.preventDefault();
+  const form=e.target;
+  const inputs=[...form.querySelectorAll('.quote-upload input[type=file]')];
+  if(inputs.some(x=>!x.files || !x.files.length)){
+    alert("Please select all 5 kitchen photos.");
+    return;
+  }
+  const phone=document.getElementById("quotePhone").value.trim();
+  if(!/^[6-9]\d{9}$/.test(phone)){
+    alert("Please enter a valid 10-digit WhatsApp number.");
+    return;
+  }
+
+  const btn=form.querySelector(".quote-submit");
+  btn.disabled=true;
+  btn.textContent="PREPARING WHATSAPP…";
+
+  const name=document.getElementById("quoteName").value.trim() || "Not provided";
+  const type=document.getElementById("quoteType").value || "Don't Know";
+  const now=new Date();
+  const requestId="FZ-"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+Math.floor(1000+Math.random()*9000);
+
+  const message=
+`NEW KITCHEN QUOTE REQUEST
+Request ID: ${requestId}
+Customer: ${name}
+WhatsApp: +91 ${phone}
+Kitchen Type: ${type}
+Photos: 5
+Time: ${now.toLocaleString("en-IN")}
+
+Please review the 5 kitchen photos and send the estimated quotation on WhatsApp within approximately 1 hour during working hours.`;
+
+  const files=inputs.map(x=>x.files[0]);
+  let shared=false;
+
+  // On supported mobile browsers, open the native share sheet with the actual 5 image files.
+  // The customer can choose WhatsApp from the share sheet.
+  try{
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files}))){
+      await navigator.share({title:"Flazzor Kitchen Quote",text:message,files});
+      shared=true;
+    }
+  }catch(err){
+    // User may close the share sheet; fallback below.
+  }
+
+  if(!shared){
+    const waUrl="https://wa.me/"+WA+"?text="+encodeURIComponent(message);
+    window.open(waUrl,"_blank","noopener");
+  }
+
+  document.getElementById("quoteFormView").hidden=true;
+  document.getElementById("quoteSuccess").hidden=false;
+  document.getElementById("quoteSuccessText").textContent=
+    shared
+    ? "Share sheet opened. Please select WhatsApp and send the 5 photos."
+    : "WhatsApp is opening with your enquiry details. Please attach the same 5 photos before sending.";
+  btn.disabled=false;
+}
