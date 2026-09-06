@@ -1,6 +1,51 @@
 const WA = "919828028286";
 const CALL1 = "919828028286";
 const CALL2 = "917425061880";
+/* ================= GET YOUR QUOTE MODAL ================= */
+
+function openQuoteModal(){
+  const m = document.getElementById("quoteModal");
+  if(!m) return;
+
+  m.classList.add("show");
+  m.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeQuoteModal(){
+  const m = document.getElementById("quoteModal");
+  if(!m) return;
+
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+}
+
+/* Show selected photo name */
+document.addEventListener("change", function(e){
+  const input = e.target;
+
+  if(input.matches(".quote-upload input[type=file]")){
+    const label = input.closest(".quote-upload");
+
+    if(input.files && input.files.length){
+      label.classList.add("has-file");
+
+      const icon = label.querySelector(".upload-icon");
+      const small = label.querySelector("small");
+
+      if(icon) icon.textContent = "✓";
+
+      if(small){
+        const filename = input.files[0].name;
+        small.textContent =
+          filename.length > 17
+          ? filename.slice(0,15) + "…"
+          : filename;
+      }
+    }
+  }
+});
 
 let cats = [];
 let current = [];
