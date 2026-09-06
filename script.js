@@ -502,9 +502,11 @@ e.preventDefault();
 const form=e.target;
 const inputs=[...form.querySelectorAll('.quote-upload input[type=file]')];
 
-if(inputs.some(x=>!x.files || !x.files.length)){
-alert("Please select all 5 kitchen photos.");
-return;
+const selectedPhotos = inputs.filter(x => x.files && x.files.length);
+
+if(selectedPhotos.length === 0){
+  alert("Please select at least 1 kitchen photo.");
+  return;
 }
 
 const phone=document.getElementById("quotePhone").value.trim();
