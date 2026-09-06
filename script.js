@@ -497,69 +497,98 @@ document.addEventListener("dragstart", e => {
 
 /* ================= GET YOUR QUOTE ================= */
 async function submitQuote(e){
-e.preventDefault();
+  e.preventDefault();
 
-const form=e.target;
-const inputs=[...form.querySelectorAll('.quote-upload input[type=file]')];
+  const form = e.target;
+  const inputs = [...form.querySelectorAll('.quote-upload input[type=file]')];
 
-const selectedPhotos = inputs.filter(x => x.files && x.files.length);
+  const selectedPhotos = inputs.filter(
+    x => x.files && x.files.length
+  );
 
-if(selectedPhotos.length === 0){
-  alert("Please select at least 1 kitchen photo.");
-  return;
-}
+  if(selectedPhotos.length === 0){
+    alert("Please select at least 1 kitchen photo.");
+    return;
+  }
 
-const phone=document.getElementById("quotePhone").value.trim();
+  const phone = document.getElementById("quotePhone").value.trim();
 
-if(!/^[6-9]\d{9}$/.test(phone)){
-alert("Please enter a valid 10-digit WhatsApp number.");
-return;
-}
+  if(!/^[6-9]\d{9}$/.test(phone)){
+    alert("Please enter a valid 10-digit WhatsApp number.");
+    return;
+  }
 
-const btn=form.querySelector(".quote-submit");
-btn.disabled=true;
-btn.textContent="OPENING WHATSAPP…";
+  const btn = form.querySelector(".quote-submit");
+  btn.disabled = true;
+  btn.textContent = "OPENING WHATSAPP…";
 
-const name=document.getElementById("quoteName").value.trim() || "Not provided";
-const type=document.getElementById("quoteType").value || "Don't Know";
+  const name =
+    document.getElementById("quoteName").value.trim() ||
+    "Not provided";
 
-const now=new Date();
+  const type =
+    document.getElementById("quoteType").value ||
+    "Don't Know";
 
-const requestId=
-"FZ-"+
-now.getFullYear()+
-String(now.getMonth()+1).padStart(2,"0")+
-String(now.getDate()).padStart(2,"0")+
-"-"+
-Math.floor(1000+Math.random()*9000);
+  const now = new Date();
 
-const message=
+  const requestId =
+    "FZ-" +
+    now.getFullYear() +
+    String(now.getMonth()+1).padStart(2,"0") +
+    String(now.getDate()).padStart(2,"0") +
+    "-" +
+    Math.floor(1000 + Math.random()*9000);
+
+  const message =
 `NEW KITCHEN QUOTE REQUEST
 
 Request ID: ${requestId}
 Customer: ${name}
 Customer WhatsApp: +91 ${phone}
 Kitchen Type: ${type}
-Photos: 5
+Photos: ${selectedPhotos.length}
 
-Please review the 5 kitchen photos and send the estimated quotation on WhatsApp.
+Please review the kitchen photos and send the estimated quotation on WhatsApp.
 
 Time: ${now.toLocaleString("en-IN")}`;
 
-// Directly open Flazzor WhatsApp chat.
-// Customer does NOT need to search/select Flazzor contact.
-const waUrl=
-"https://wa.me/"+WA+
-"?text="+encodeURIComponent(message);
+  const files = selectedPhotos.map(x => x.files[0]);
 
-window.location.href=waUrl;
+  try {
 
-document.getElementById("quoteFormView").hidden=true;
-document.getElementById("quoteSuccess").hidden=false;
+    if(navigator.canShare && navigator.canShare({files: files})){
 
-document.getElementById("quoteSuccessText").textContent=
-"WhatsApp is opening with your enquiry details. Please attach the same 5 selected photos and press Send.";
+      await navigator.share({
+        files: files,
+        text: message
+      });
 
-btn.disabled=false;
-btn.textContent="SUBMIT & GET MY QUOTE →";
+    }else{
+
+      const waUrl =
+        "https://wa.me/" +
+        WA +
+        "?text=" +
+        encodeURIComponent(message);
+
+      window.location.href = waUrl;
+    }
+
+  }catch(error){
+
+    console.log("Share cancelled or failed:", error);
+
+  }
+
+  document.getElementById("quoteFormView").hidden = true;
+  document.getElementById("quoteSuccess").hidden = false;
+
+  document.getElementById("quoteSuccessText").textContent =
+    "Please select WhatsApp and send the selected " +
+    selectedPhotos.length +
+    " photo(s) with your enquiry.";
+
+  btn.disabled = false;
+  btn.textContent = "SUBMIT & GET MY QUOTE →";
 }
