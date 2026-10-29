@@ -1,47 +1,49 @@
+
 const WA = "919828028286";
 const CALL1 = "919828028286";
 const CALL2 = "917425061880";
+
 /* ================= GET YOUR QUOTE MODAL ================= */
 
-function openQuoteModal(){
+function openQuoteModal() {
   const m = document.getElementById("quoteModal");
-  if(!m) return;
+  if (!m) return;
 
   m.classList.add("show");
-  m.setAttribute("aria-hidden","false");
+  m.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
 
-function closeQuoteModal(){
+function closeQuoteModal() {
   const m = document.getElementById("quoteModal");
-  if(!m) return;
+  if (!m) return;
 
   m.classList.remove("show");
-  m.setAttribute("aria-hidden","true");
+  m.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
 }
 
 /* Show selected photo name */
-document.addEventListener("change", function(e){
+document.addEventListener("change", function (e) {
   const input = e.target;
 
-  if(input.matches(".quote-upload input[type=file]")){
+  if (input.matches(".quote-upload input[type=file]")) {
     const label = input.closest(".quote-upload");
 
-    if(input.files && input.files.length){
+    if (input.files && input.files.length) {
       label.classList.add("has-file");
 
       const icon = label.querySelector(".upload-icon");
       const small = label.querySelector("small");
 
-      if(icon) icon.textContent = "✓";
+      if (icon) icon.textContent = "✓";
 
-      if(small){
+      if (small) {
         const filename = input.files[0].name;
         small.textContent =
           filename.length > 17
-          ? filename.slice(0,15) + "…"
-          : filename;
+            ? filename.slice(0, 15) + "…"
+            : filename;
       }
     }
   }
@@ -68,7 +70,7 @@ const modularFolders = [
   {
     folder: "laminated",
     title: "Laminated Kitchen",
-    desc: "Practical and elegant laminated modular kitchen designs."
+    desc: "Practical and elegant laminated kitchen designs."
   }
 ];
 
@@ -84,11 +86,16 @@ function esc(s) {
 
 async function loadData() {
   const r = await fetch("data.json");
+
+  if (!r.ok) {
+    throw new Error("data.json load nahi hua: " + r.status);
+  }
+
   cats = await r.json();
   return cats;
 }
 
-/* Read all images directly from a GitHub folder */
+/* Read all images directly from GitHub folders */
 async function getFolderImages(folder) {
   try {
     const url =
@@ -98,9 +105,18 @@ async function getFolderImages(folder) {
 
     const r = await fetch(url);
 
-    if (!r.ok) return [];
+    if (!r.ok) {
+      console.error(
+        "GitHub folder load error:",
+        folder,
+        r.status
+      );
+      return [];
+    }
 
     const files = await r.json();
+
+    if (!Array.isArray(files)) return [];
 
     return files
       .filter(f =>
@@ -120,7 +136,7 @@ async function getFolderImages(folder) {
       }));
 
   } catch (e) {
-    console.error("Folder loading error:", e);
+    console.error("Folder loading error:", folder, e);
     return [];
   }
 }
@@ -138,14 +154,11 @@ function normalCategoryCard(c) {
   return `
     <article class="card"
       onclick="location.href='gallery.html?cat=${encodeURIComponent(c.slug)}'">
-
       ${img}
-
       <div class="card-body">
         <h3>${esc(c.title)}</h3>
         <p>${esc(c.desc || "")}</p>
       </div>
-
     </article>
   `;
 }
@@ -172,41 +185,41 @@ async function modularCategoryCard() {
   return `
     <article class="card"
       onclick="location.href='gallery.html?cat=modular-kitchen'">
-
       ${img}
-
       <div class="card-body">
         <h3>Modular Kitchen</h3>
         <p>Explore Acrylic, Laminated Kitchen and Accessories.</p>
       </div>
-
     </article>
   `;
 }
 
 /* Home Page */
 async function initHome() {
-  const data = await loadData();
+  try {
+    const data = await loadData();
+    const cards = [];
 
-  const cards = [];
-
-  for (const c of data) {
-
-    if (c.slug === "modular-kitchen") {
-      cards.push(await modularCategoryCard());
-    } else {
-      cards.push(normalCategoryCard(c));
+    for (const c of data) {
+      if (c.slug === "modular-kitchen") {
+        cards.push(await modularCategoryCard());
+      } else {
+        cards.push(normalCategoryCard(c));
+      }
     }
 
-  }
+    const grid = document.getElementById("categoryGrid");
 
-  document.getElementById("categoryGrid").innerHTML =
-    cards.join("");
+    if (grid) {
+      grid.innerHTML = cards.join("");
+    }
+  } catch (e) {
+    console.error("Home page loading error:", e);
+  }
 }
 
 /* Create Modular Kitchen sub-category card */
 async function modularSubCard(item) {
-
   const imgs = await getFolderImages(item.folder);
   const first = imgs[0]?.src;
 
@@ -216,25 +229,28 @@ async function modularSubCard(item) {
          <span>${esc(item.title)}</span>
        </div>`;
 
+  const target = encodeURIComponent(
+    "modular-kitchen/" + item.folder
+  );
+
   return `
     <article class="card"
-      onclick="location.href='gallery.html?cat=${encodeURIComponent(
-        "modular-kitchen/" + item.folder
-      )}">
-
+      onclick="location.href='gallery.html?cat=${target}'">
       ${img}
-
       <div class="card-body">
         <h3>${esc(item.title)}</h3>
         <p>${esc(item.desc)}</p>
       </div>
-
     </article>
   `;
 }
 
 /* Show Modular Kitchen sub-categories */
 async function showModularCategories() {
+  const grid = document.getElementById("photoGrid");
+  if (!grid) return;
+
+  grid.innerHTML = `<div class="empty">Loading categories...</div>`;
 
   const cards = [];
 
@@ -242,278 +258,217 @@ async function showModularCategories() {
     cards.push(await modularSubCard(item));
   }
 
-  document.getElementById("photoGrid").innerHTML =
+  grid.innerHTML =
     `<div class="modular-grid">${cards.join("")}</div>`;
 }
 
 /* Gallery */
 async function initGallery() {
+  const grid = document.getElementById("photoGrid");
 
-  const data = await loadData();
+  try {
+    const data = await loadData();
+    const params = new URLSearchParams(location.search);
+    const slug = params.get("cat") || "wardrobe";
 
-  const params = new URLSearchParams(location.search);
+    /* Modular Kitchen main page */
+    if (slug === "modular-kitchen") {
+      document.title = "Modular Kitchen | Flazzor Interiors";
+      document.getElementById("gTitle").textContent =
+        "Modular Kitchen";
+      document.getElementById("gDesc").textContent =
+        "Choose your preferred kitchen finish or explore our accessories.";
 
-  const slug =
-    params.get("cat") || "wardrobe";
+      await showModularCategories();
+      return;
+    }
 
+    /* Individual Modular Kitchen folder */
+    if (slug.startsWith("modular-kitchen/")) {
+      const folder = slug.split("/")[1];
 
-  /* Modular Kitchen main page */
-
-  if (slug === "modular-kitchen") {
-
-    document.title =
-      "Modular Kitchen | Flazzor Interiors";
-
-    document.getElementById("gTitle").textContent =
-      "Modular Kitchen";
-
-    document.getElementById("gDesc").textContent =
-      "Choose your preferred kitchen finish or explore our accessories.";
-
-    await showModularCategories();
-
-    return;
-  }
-
-
-  /* Individual Modular Kitchen folder */
-
-  if (slug.startsWith("modular-kitchen/")) {
-
-    const folder =
-      slug.split("/")[1];
-
-    const item =
-      modularFolders.find(
+      const item = modularFolders.find(
         x => x.folder === folder
       );
 
-    if (!item) {
+      if (!item) {
+        document.getElementById("gTitle").textContent = "Gallery";
+        document.getElementById("gDesc").textContent =
+          "Category not found.";
+        if (grid) {
+          grid.innerHTML =
+            `<div class="empty">Category not found. Please check the folder name.</div>`;
+        }
+        return;
+      }
 
-      document.getElementById("gTitle").textContent =
-        "Gallery";
+      document.title = `${item.title} | Flazzor Interiors`;
+      document.getElementById("gTitle").textContent = item.title;
+      document.getElementById("gDesc").textContent = item.desc;
 
-      document.getElementById("gDesc").textContent =
-        "Category not found.";
+      if (grid) {
+        grid.innerHTML =
+          `<div class="empty">Loading photos...</div>`;
+      }
+
+      const images = await getFolderImages(folder);
+
+      if (!images.length) {
+        if (grid) {
+          grid.innerHTML =
+            `<div class="empty">Photos could not be loaded. Please check the GitHub folder and image files.</div>`;
+        }
+        return;
+      }
+
+      current = images;
+
+      if (grid) {
+        grid.innerHTML = images.map((im, i) => `
+          <article class="photo" onclick="openLightbox(${i})">
+            <img
+              loading="lazy"
+              src="${im.src}"
+              alt="${esc(item.title)} Design ${i + 1}">
+            <div class="cap">
+              ${esc(item.title)} Design ${i + 1}
+            </div>
+          </article>
+        `).join("");
+      }
 
       return;
     }
 
+    /* Existing data.json galleries */
+    const c = data.find(x => x.slug === slug) || data[0];
 
-    const images =
-      await getFolderImages(folder);
-
-
-    document.title =
-      `${item.title} | Flazzor Interiors`;
-
-    document.getElementById("gTitle").textContent =
-      item.title;
-
-    document.getElementById("gDesc").textContent =
-      item.desc;
-
-
-    if (!images.length) {
-
-      document.getElementById("photoGrid").innerHTML =
-        `<div class="empty">
-          Photos for this category are coming soon.
-        </div>`;
-
+    if (!c) {
+      if (grid) {
+        grid.innerHTML =
+          `<div class="empty">Category not found.</div>`;
+      }
       return;
     }
 
+    document.title = `${c.title} | Flazzor Interiors`;
+    document.getElementById("gTitle").textContent = c.title;
+    document.getElementById("gDesc").textContent = c.desc || "";
 
-    current = images;
+    if (!c.images?.length) {
+      if (grid) {
+        grid.innerHTML =
+          `<div class="empty">Photos for this category are coming soon.</div>`;
+      }
+      return;
+    }
 
+    current = c.images;
 
-    document.getElementById("photoGrid").innerHTML =
-      images.map((im, i) => `
-
-        <article class="photo"
-          onclick="openLightbox(${i})">
-
+    if (grid) {
+      grid.innerHTML = c.images.map((im, i) => `
+        <article class="photo" onclick="openLightbox(${i})">
           <img
             loading="lazy"
             src="${im.src}"
-            alt="${esc(item.title)} Design ${i + 1}">
-
+            alt="${esc(c.title)} Design ${i + 1}">
           <div class="cap">
-            ${esc(item.title)} Design ${i + 1}
+            ${esc(im.caption || c.title + " Design " + (i + 1))}
           </div>
-
         </article>
-
       `).join("");
+    }
 
-    return;
+  } catch (e) {
+    console.error("Gallery loading error:", e);
+
+    if (grid) {
+      grid.innerHTML =
+        `<div class="empty">Gallery load nahi ho paayi. Please refresh and try again.</div>`;
+    }
   }
-
-
-  /* Existing data.json galleries */
-
-  const c =
-    data.find(x => x.slug === slug) ||
-    data[0];
-
-
-  document.title =
-    `${c.title} | Flazzor Interiors`;
-
-  document.getElementById("gTitle").textContent =
-    c.title;
-
-  document.getElementById("gDesc").textContent =
-    c.desc || "";
-
-
-  if (!c.images?.length) {
-
-    document.getElementById("photoGrid").innerHTML =
-      `<div class="empty">
-        Photos for this category are coming soon.
-      </div>`;
-
-    return;
-  }
-
-
-  current = c.images;
-
-
-  document.getElementById("photoGrid").innerHTML =
-    c.images.map((im, i) => `
-
-      <article class="photo"
-        onclick="openLightbox(${i})">
-
-        <img
-          loading="lazy"
-          src="${im.src}"
-          alt="${esc(c.title)} Design ${i + 1}">
-
-        <div class="cap">
-          ${esc(
-            im.caption ||
-            c.title + " Design " + (i + 1)
-          )}
-        </div>
-
-      </article>
-
-    `).join("");
 }
 
-
 /* Lightbox */
-
 function openLightbox(i) {
+  if (!current.length || !current[i]) return;
 
   currentIndex = i;
 
-  const img =
-    document.getElementById("lbImg");
+  const img = document.getElementById("lbImg");
+  if (img) img.src = current[i].src;
 
-  img.src =
-    current[i].src;
-
-  const lightbox =
-    document.getElementById("lightbox");
-
-  lightbox.classList.add("show");
+  const lightbox = document.getElementById("lightbox");
+  if (lightbox) lightbox.classList.add("show");
 }
-
 
 function closeLightbox() {
-
-  document
-    .getElementById("lightbox")
-    .classList.remove("show");
+  const lightbox = document.getElementById("lightbox");
+  if (lightbox) lightbox.classList.remove("show");
 }
-
 
 function nextImg() {
-
   if (!current.length) return;
 
-  currentIndex =
-    (currentIndex + 1) %
-    current.length;
+  currentIndex = (currentIndex + 1) % current.length;
 
-  document.getElementById("lbImg").src =
-    current[currentIndex].src;
+  const img = document.getElementById("lbImg");
+  if (img) img.src = current[currentIndex].src;
 }
-
 
 function prevImg() {
-
   if (!current.length) return;
 
   currentIndex =
-    (currentIndex - 1 + current.length) %
-    current.length;
+    (currentIndex - 1 + current.length) % current.length;
 
-  document.getElementById("lbImg").src =
-    current[currentIndex].src;
+  const img = document.getElementById("lbImg");
+  if (img) img.src = current[currentIndex].src;
 }
 
-
 /* Keyboard controls */
-
 document.addEventListener("keydown", e => {
-
-  if (e.key === "Escape")
-    closeLightbox();
-
-  if (e.key === "ArrowRight")
-    nextImg();
-
-  if (e.key === "ArrowLeft")
-    prevImg();
-
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowRight") nextImg();
+  if (e.key === "ArrowLeft") prevImg();
 });
-
 
 /* Prevent direct image saving */
-
 document.addEventListener("contextmenu", e => {
-
   if (e.target.tagName === "IMG") {
     e.preventDefault();
   }
-
 });
-
 
 document.addEventListener("dragstart", e => {
-
   if (e.target.tagName === "IMG") {
     e.preventDefault();
   }
-
 });
 
-
 /* ================= GET YOUR QUOTE ================= */
-async function submitQuote(e){
+
+async function submitQuote(e) {
   e.preventDefault();
 
   const form = e.target;
-  const inputs = [...form.querySelectorAll('.quote-upload input[type=file]')];
+  const inputs = [
+    ...form.querySelectorAll('.quote-upload input[type=file]')
+  ];
 
   const selectedPhotos = inputs.filter(
     x => x.files && x.files.length
   );
 
-  if(selectedPhotos.length === 0){
+  if (selectedPhotos.length === 0) {
     alert("Please select at least 1 kitchen photo.");
     return;
   }
 
-  const phone = document.getElementById("quotePhone").value.trim();
+  const phone =
+    document.getElementById("quotePhone").value.trim();
 
-  if(!/^[6-9]\d{9}$/.test(phone)){
+  if (!/^[6-9]\d{9}$/.test(phone)) {
     alert("Please enter a valid 10-digit WhatsApp number.");
     return;
   }
@@ -535,10 +490,10 @@ async function submitQuote(e){
   const requestId =
     "FZ-" +
     now.getFullYear() +
-    String(now.getMonth()+1).padStart(2,"0") +
-    String(now.getDate()).padStart(2,"0") +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    String(now.getDate()).padStart(2, "0") +
     "-" +
-    Math.floor(1000 + Math.random()*9000);
+    Math.floor(1000 + Math.random() * 9000);
 
   const message =
 `NEW KITCHEN QUOTE REQUEST
@@ -556,16 +511,12 @@ Time: ${now.toLocaleString("en-IN")}`;
   const files = selectedPhotos.map(x => x.files[0]);
 
   try {
-
-    if(navigator.canShare && navigator.canShare({files: files})){
-
+    if (navigator.canShare && navigator.canShare({ files: files })) {
       await navigator.share({
         files: files,
         text: message
       });
-
-    }else{
-
+    } else {
       const waUrl =
         "https://wa.me/" +
         WA +
@@ -574,20 +525,23 @@ Time: ${now.toLocaleString("en-IN")}`;
 
       window.location.href = waUrl;
     }
-
-  }catch(error){
-
+  } catch (error) {
     console.log("Share cancelled or failed:", error);
-
   }
 
-  document.getElementById("quoteFormView").hidden = true;
-  document.getElementById("quoteSuccess").hidden = false;
+  const formView = document.getElementById("quoteFormView");
+  const success = document.getElementById("quoteSuccess");
+  const successText = document.getElementById("quoteSuccessText");
 
-  document.getElementById("quoteSuccessText").textContent =
-    "Please select WhatsApp and send the selected " +
-    selectedPhotos.length +
-    " photo(s) with your enquiry.";
+  if (formView) formView.hidden = true;
+  if (success) success.hidden = false;
+
+  if (successText) {
+    successText.textContent =
+      "Please select WhatsApp and send the selected " +
+      selectedPhotos.length +
+      " photo(s) with your enquiry.";
+  }
 
   btn.disabled = false;
   btn.textContent = "SUBMIT & GET MY QUOTE →";
