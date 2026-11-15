@@ -2,404 +2,153 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Flazzor Interiors | A Complete Interior Shoppe</title>
-<meta name="description" content="Flazzor Interiors, Udaipur — modular kitchens, wardrobes, beds, sofas, TV wall units, dressers, designer HDHMR doors and mandir designs.">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#171717">
+<title>Ogaan Lam Colour Catalogue | Flazzor Interiors</title>
+<style>
+:root{color-scheme:dark;--bg:#171717;--panel:#242424;--text:#f5f5f5;--muted:#b8b8b8;--accent:#d5b47a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 Arial,sans-serif;min-height:100vh}
+header{padding:13px 16px;text-align:center;border-bottom:1px solid #393939}
+header strong{display:block;font-size:18px;letter-spacing:.4px}header small{color:var(--muted)}
+main{max-width:1200px;margin:auto;padding:12px}
+#status{text-align:center;color:var(--muted);padding:12px}
+#book-wrap{display:flex;justify-content:center;align-items:center;min-height:65vh;overflow:hidden}
+#book{margin:auto}
+.page{background:#fff;overflow:hidden}.page canvas{display:block;width:100%;height:100%;object-fit:contain}
+.toolbar{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;padding:14px 4px}
+button{border:1px solid #555;background:var(--panel);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;cursor:pointer}
+button.primary{background:var(--accent);color:#171717;border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.35;cursor:not-allowed}
+#counter{min-width:92px;text-align:center;color:var(--muted);font-variant-numeric:tabular-nums}
+.hint{text-align:center;color:var(--muted);font-size:12px;padding-bottom:14px}
+#zoomModal{display:none;position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.94);padding:12px}
+#zoomModal.open{display:flex;flex-direction:column}
+.zoombar{display:flex;justify-content:center;gap:8px;align-items:center;padding-bottom:10px;flex-wrap:wrap}
+#zoomViewport{flex:1;overflow:auto;text-align:center;background:#222;border-radius:8px;touch-action:pan-x pan-y}
+#zoomCanvas{max-width:none;display:block;margin:0 auto;transform-origin:top left}
+footer{text-align:center;color:#888;font-size:11px;padding:10px}
+@media(max-width:600px){header strong{font-size:16px}main{padding:4px}button{padding:9px 11px}#book-wrap{min-height:58vh}}
+</style>
 </head>
-
-<body onload="initHome()">
-
-<header class="header">
-<nav class="nav">
-<a href="index.html">
-<img class="logo" src="images/flazzor-logo.jpg" alt="Flazzor Interiors">
-</a>
-
-<div class="navlinks">
-<a href="#home">Home</a>
-<a href="#categories">Gallery</a>
-<a href="#about">About</a>
-<a href="#contact">Contact</a>
-</div>
-</nav>
-</header>
-
-<main id="home">
-
-<!-- HERO -->
-<section class="hero">
-<div class="hero-inner">
-
-<div>
-<span class="tag">A Complete Interior Shoppe</span>
-
-<h1>Beautiful interiors, made for your space.</h1>
-
-<p>
-Explore our collection of modular kitchens, modular wardrobes, bedroom furniture,
-sofas, TV wall units, dressers, study table, mandeer , flush doors, designer HDHMR doors. .
-</p>
-
-<div class="buttons">
-<a class="btn btn-red" href="#categories">Explore Gallery</a>
-
-<a class="btn btn-light"
-href="https://wa.me/919828028286"
-target="_blank"
-rel="noopener">
-WhatsApp Us
-</a>
-</div>
-</div>
-
-<div class="hero-card">
-<img id="heroImage" src="images/hero-interior.jpg" alt="Flazzor Interiors">
-</div>
-
-</div>
-</section>
-
-
-<!-- GALLERY -->
-<section class="section" id="categories">
-
-<h2>Our Design Gallery</h2>
-
-<p class="lead">
-Click a category to explore our collection of interior designs and furniture.
-</p>
-
-<div class="grid" id="categoryGrid"></div>
-
-</section>
-
-
-
-<!-- GET YOUR QUOTE -->
-<section class="quote-cta" id="get-your-quote">
-  <div class="quote-cta-inner">
-    <div class="quote-copy">
-      <span class="quote-badge">FAST KITCHEN ESTIMATE</span>
-      <h2>GET YOUR QUOTE</h2>
-      <p class="quote-main">अपनी Kitchen की सिर्फ <strong>5 Photos</strong> भेजें</p>
-      <p class="quote-sub">Dimension या measurement की जरूरत नहीं। हमारी team photos देखकर estimated quotation तैयार करेगी और WhatsApp पर भेजेगी.</p>
-      <div class="quote-points">
-        <span>📸 5 Photos</span>
-        <span>📱 WhatsApp Number</span>
-        <span>⏱️ Approx. 1 Hour*</span>
-      </div>
-    </div>
-    <button class="quote-main-btn" type="button" onclick="openQuoteModal()">
-      <span>GET YOUR QUOTE</span>
-      <small>Start in 30 seconds →</small>
-    </button>
+<body>
+<header><strong>OGAAN LAM COLOUR CATALOGUE</strong><small>Solid Colours &amp; Textures · Presented by Flazzor Interiors</small></header>
+<main>
+  <div id="status">Loading catalogue… Please wait.</div>
+  <div id="book-wrap"><div id="book"></div></div>
+  <div class="toolbar">
+    <button id="prev" disabled>← Previous</button>
+    <span id="counter">Page – / –</span>
+    <button id="next" disabled>Next →</button>
+    <button id="zoom" disabled>＋ Zoom Colour</button>
+    <button id="fullscreen">⛶ Full Screen</button>
   </div>
-</section>
-
-<!-- QUOTE MODAL -->
-<div class="quote-modal" id="quoteModal" aria-hidden="true">
-  <div class="quote-overlay" onclick="closeQuoteModal()"></div>
-  <div class="quote-dialog" role="dialog" aria-modal="true" aria-labelledby="quoteTitle">
-    <button class="quote-close" type="button" onclick="closeQuoteModal()" aria-label="Close">×</button>
-
-    <div id="quoteFormView">
-      <div class="quote-modal-head">
-        <span class="quote-badge">GET YOUR QUOTE</span>
-        <h2 id="quoteTitle">5 Photos. That's it.</h2>
-        <p>अपनी present kitchen की 5 clear photos चुनें और अपना WhatsApp number डालें.</p>
-      </div>
-
-      <form id="quoteForm" onsubmit="submitQuote(event)">
-        <div class="quote-photo-grid">
-          <label class="quote-upload">
-            <input type="file" accept="image/*" data-slot="1">
-            <span class="upload-icon">📷</span><strong>Front View</strong><small>पूरी kitchen</small>
-          </label>
-          <label class="quote-upload">
-            <input type="file" accept="image/*" data-slot="2">
-            <span class="upload-icon">📷</span><strong>Left Side</strong><small>बाईं तरफ</small>
-          </label>
-          <label class="quote-upload">
-            <input type="file" accept="image/*" data-slot="3">
-            <span class="upload-icon">📷</span><strong>Right Side</strong><small>दाईं तरफ</small>
-          </label>
-          <label class="quote-upload">
-            <input type="file" accept="image/*" data-slot="4">
-            <span class="upload-icon">📷</span><strong>Sink / Platform</strong><small>sink area</small>
-          </label>
-          <label class="quote-upload">
-            <input type="file" accept="image/*" data-slot="5">
-            <span class="upload-icon">📷</span><strong>Other Side</strong><small>पूरा दूसरा view</small>
-          </label>
-        </div>
-
-        <div class="quote-field">
-          <label for="quotePhone">WhatsApp Number <span>*</span></label>
-          <input id="quotePhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile number" required>
-        </div>
-
-        <div class="quote-field">
-          <label for="quoteName">Name <small>(optional)</small></label>
-          <input id="quoteName" type="text" maxlength="60" placeholder="Your name">
-        </div>
-
-        <div class="quote-field">
-          <label for="quoteType">Kitchen Type <small>(optional)</small></label>
-          <select id="quoteType">
-            <option value="">Don't Know</option>
-            <option>Straight</option>
-            <option>L-Shape</option>
-            <option>Parallel</option>
-            <option>U-Shape</option>
-            <option>Island Kitchen</option>
-          </select>
-        </div>
-
-        <p class="quote-note">* Estimated quotation is subject to photo clarity, scope and working hours. Final quotation may change after site measurement.</p>
-        <button class="quote-submit" type="submit">SUBMIT & GET MY QUOTE →</button>
-        <p class="quote-privacy">Your number is used only for this quotation enquiry.</p>
-      </form>
-    </div>
-
-    <div class="quote-success" id="quoteSuccess" hidden>
-      <div class="success-icon">✓</div>
-      <h2>Photos Ready!</h2>
-      <p id="quoteSuccessText">WhatsApp is opening with your enquiry details.</p>
-      <div class="success-steps">
-        <div><b>1</b> WhatsApp में Flazzor chat खुलेगी.</div>
-        <div><b>2</b> अगर photos automatically attach न हों, तो यही 5 selected photos attach करके Send दबाएँ.</div>
-        <div><b>3</b> हमारी team photos देखकर estimated quotation तैयार करेगी.</div>
-      </div>
-      <button class="quote-submit" type="button" onclick="closeQuoteModal()">DONE</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- ABOUT -->
-<section class="section" id="about">
-
-<h2>About Flazzor Interiors</h2>
-
-<p class="lead">
-Creating beautiful, practical and functional spaces for modern homes.
-</p>
-
-
-<div class="card" style="padding:24px">
-
-<h3>About Our Company</h3>
-
-<p>
-Flazzor Interiors is a Udaipur-based interior and furniture solutions brand,
-focused on creating beautiful, practical and functional spaces for modern homes.
-</p>
-
-<p>
-We specialize in Modular Kitchens, Wardrobes, Beds, TV Units, Dressing Tables,
-CNC Mandirs and other customized interior solutions.
-</p>
-
-<p>
-Our approach is simple — understand the customer's requirements, make the best
-use of available space, and create designs that match their lifestyle, taste
-and budget.
-</p>
-
-<p style="margin-bottom:0">
-From material selection and design to finishing and installation, we focus on
-quality workmanship, attention to detail and customer satisfaction.
-</p>
-
-</div>
-
-
-<!-- FOUNDER -->
-<div class="card" style="padding:24px;margin-top:24px">
-
-<h3>About the Founder</h3>
-
-<h4 style="margin-top:0">
-The Vision Behind Flazzor Interiors
-</h4>
-
-<p>
-Flazzor Interiors was built with a simple vision — to make quality interior
-solutions accessible, practical and personalized for every home.
-</p>
-
-<p>
-The founder Mr. Abhishek Agrawal believes that a good interior is not just about how beautiful it
-looks. It should also be strong, functional, space-efficient and comfortable
-for everyday use.
-</p>
-
-<p>
-With a customer-first approach, every project is handled with attention to
-the client's requirements, preferences and budget.
-</p>
-
-<p style="margin-bottom:0">
-The goal is to build long-term relationships with customers through quality
-work, honest communication and reliable service.From 2008 to 2026, our Founder has successfully completed 800+ residential, 
-  commercial, government, and private projects, building a strong reputation through quality, 
-  customization, and commitment. From Udaipur to cities such as Bhilwara, Jaipur, Indore, Agra, Jodhpur, Bhopal, and beyond,
-  every project reflects years of experience, dedication, and client trust. Today, this journey stands as a proud story of 18+ years of 
-  excellence in interior design and furniture solutions.
-</p>
-
-</div>
-
-
-<!-- WHY CHOOSE US -->
-<div class="card" style="padding:24px;margin-top:24px">
-
-<h3>Why Choose Flazzor Interiors?</h3>
-
-<ul style="margin-bottom:0;line-height:1.9">
-
-<li><strong>Customized Designs</strong> tailored to your space and requirements</li>
-
-<li><strong>Quality Materials</strong> selected for durability and performance</li>
-
-<li><strong>Practical Space Utilization</strong> for maximum functionality</li>
-
-<li><strong>Professional Finishing</strong> with attention to detail</li>
-
-<li><strong>Transparent Pricing</strong> with clear communication</li>
-
-<li><strong>Complete Solutions</strong> from design to installation</li>
-
-<li><strong>Customer-Focused Service</strong> before, during and after the project</li>
-
-</ul>
-
-</div>
-<!-- MANUFACTURING PROCESS -->
-<section class="section" style="margin-top:40px">
-
-<div class="card" style="padding:28px">
-
-<h2>From Raw Material to Finished Furniture</h2>
-
-<p style="font-size:18px;line-height:1.7">
-Take a look at how we manufacture, finish and assemble our furniture —
-step by step.
-</p>
-
-<div style="margin-top:24px">
-
-<a class="btn btn-red" href="manufacturing.html">
-ENTRY
-</a>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- OUR PROMISE -->
-<div class="card" style="padding:24px;margin-top:24px">
-
-<h3>Our Promise</h3>
-
-<p style="margin:0;font-size:18px;font-weight:600">
-“We don't just create furniture. We create spaces that make your home feel better.”
-</p>
-
-</div>
-
-</section>
-
+  <div class="hint">Tap a page edge or swipe to turn pages. Use “Zoom Colour” to inspect the current page in detail.</div>
 </main>
+<footer>Flazzor Interiors · Udaipur</footer>
 
-
-<!-- CONTACT -->
-<section class="contact" id="contact">
-
-<div class="section">
-
-<div class="contact-grid">
-
-<div>
-
-<h2 style="color:#fff">
-Let's discuss your project
-</h2>
-
-<p>
-Call or WhatsApp us for enquiries and design discussions.
-</p>
-
+<div id="zoomModal" aria-hidden="true">
+  <div class="zoombar">
+    <button id="zoomOut">−</button><span id="zoomLevel">100%</span><button id="zoomIn">＋</button>
+    <button id="zoomReset">Reset</button><button id="zoomClose" class="primary">Close ✕</button>
+  </div>
+  <div id="zoomViewport"><canvas id="zoomCanvas"></canvas></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script>
+(() => {
+  const PDF_FILE = "ogaan-lam-catalogue.pdf";
+  const $ = id => document.getElementById(id);
+  const status = $("status"), bookEl = $("book");
+  let pdfDoc, pageFlip, currentPage = 0, zoomScale = 1, zoomBase = 1;
+  const PAGE_W = 500, PAGE_H = 707;
 
-<div class="contact-box">
-
-<h3>Contact Flazzor Interiors</h3>
-
-<div class="contact-line">
-📞 <a href="tel:+919828028286">98280 28286</a>
-</div>
-
-<div class="contact-line">
-📞 <a href="tel:+917425061880">74250 61880</a>
-</div>
-
-<div class="contact-line">
-✉️ <a href="mailto:Abhishek28286@gmail.com">
-Abhishek28286@gmail.com
-</a>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- FOOTER -->
-<footer class="footer">
-
-<strong>Flazzor Interiors</strong>
-· 47 Shahi Complex, Sector 11, Udaipur
-
-<br>
-
-© 2026 Flazzor Interiors. All rights reserved.
-
-</footer>
-
-
-<!-- FLOATING BUTTONS -->
-<div class="floating">
-
-<a class="float-btn wa"
-href="https://wa.me/919828028286"
-target="_blank"
-rel="noopener">
-WhatsApp
-</a>
-
-<a class="float-btn call"
-href="tel:+919828028286">
-Call Now
-</a>
-
-</div>
-
-
-<script src="script.js?v=3"></script>
-
+  function setStatus(msg){ status.textContent = msg; }
+  function updateControls(){
+    if(!pdfDoc) return;
+    $("counter").textContent = `Page ${Math.min(currentPage+1,pdfDoc.numPages)} / ${pdfDoc.numPages}`;
+    $("prev").disabled = currentPage <= 0;
+    $("next").disabled = currentPage >= pdfDoc.numPages-1;
+    $("zoom").disabled = false;
+  }
+  async function renderThumb(pageNo, canvas){
+    const page = await pdfDoc.getPage(pageNo);
+    const viewport = page.getViewport({scale: 0.82});
+    const ctx = canvas.getContext("2d", {alpha:false});
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+    await page.render({canvasContext:ctx, viewport}).promise;
+  }
+  async function openZoom(){
+    const page = await pdfDoc.getPage(currentPage+1);
+    const vp = page.getViewport({scale: 1.8});
+    const c = $("zoomCanvas"), ctx = c.getContext("2d", {alpha:false});
+    c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+    zoomBase = Math.min(($("zoomViewport").clientWidth-24)/c.width, 1);
+    zoomScale = zoomBase;
+    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    applyZoom();
+    $("zoomModal").classList.add("open");
+    $("zoomModal").setAttribute("aria-hidden","false");
+  }
+  function applyZoom(){
+    const c=$("zoomCanvas");
+    c.style.width=(c.width*zoomScale)+"px";
+    c.style.height=(c.height*zoomScale)+"px";
+    $("zoomLevel").textContent=Math.round(zoomScale/zoomBase*100)+"%";
+  }
+  async function init(){
+    if(!window.pdfjsLib){setStatus("Could not load the PDF viewer library. Check your internet connection and refresh.");return;}
+    if(!window.St || !window.St.PageFlip){setStatus("Could not load the page-flip library. Check your internet connection and refresh.");return;}
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    try{
+      const loading=pdfjsLib.getDocument({url:PDF_FILE});
+      pdfDoc=await loading.promise;
+      setStatus(`Preparing ${pdfDoc.numPages} pages…`);
+      const pages=[];
+      for(let i=1;i<=pdfDoc.numPages;i++){
+        const el=document.createElement("div"); el.className="page";
+        const canvas=document.createElement("canvas"); el.appendChild(canvas); bookEl.appendChild(el); pages.push(el);
+        await renderThumb(i,canvas);
+        if(i%5===0 || i===pdfDoc.numPages) setStatus(`Preparing pages ${i} / ${pdfDoc.numPages}…`);
+      }
+      pageFlip=new St.PageFlip(bookEl,{
+        width:PAGE_W,height:PAGE_H,size:"stretch",minWidth:260,maxWidth:PAGE_W,
+        minHeight:368,maxHeight:PAGE_H,showCover:true,usePortrait:true,
+        mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,
+        flippingTime:650,autoSize:true
+      });
+      pageFlip.loadFromHTML(pages);
+      pageFlip.on("flip",e=>{currentPage=e.data;updateControls();});
+      $("prev").disabled=false;$("next").disabled=false;
+      updateControls();setStatus("Catalogue ready.");
+      setTimeout(()=>{status.style.display="none";},1800);
+    }catch(err){
+      console.error(err);
+      setStatus("Unable to open the catalogue. Make sure ogaan-lam-catalogue.pdf is in the same folder as index.html.");
+    }
+  }
+  $("prev").addEventListener("click",()=>pageFlip&&pageFlip.flipPrev());
+  $("next").addEventListener("click",()=>pageFlip&&pageFlip.flipNext());
+  $("zoom").addEventListener("click",()=>openZoom().catch(console.error));
+  $("fullscreen").addEventListener("click",async()=>{
+    try{if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen();}catch(e){}
+  });
+  $("zoomClose").addEventListener("click",()=>{$("zoomModal").classList.remove("open");$("zoomModal").setAttribute("aria-hidden","true");});
+  $("zoomIn").addEventListener("click",()=>{zoomScale=Math.min(zoomScale*1.25,zoomBase*4);applyZoom();});
+  $("zoomOut").addEventListener("click",()=>{zoomScale=Math.max(zoomScale/1.25,zoomBase*.65);applyZoom();});
+  $("zoomReset").addEventListener("click",()=>{zoomScale=zoomBase;applyZoom();});
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape") $("zoomClose").click();
+    if(e.key==="ArrowLeft" && pageFlip) pageFlip.flipPrev();
+    if(e.key==="ArrowRight" && pageFlip) pageFlip.flipNext();
+  });
+  init();
+})();
+</script>
 </body>
 </html>
-
 
 
 
