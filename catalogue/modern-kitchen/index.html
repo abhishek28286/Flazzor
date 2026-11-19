@@ -123,6 +123,12 @@ function init(){
  });
  document.getElementById('counter').textContent='1 / '+groups.length;
 }
+// Keep all programmatic forward turns on the same TOP corner used by backward turns.
+// The previous build used 'bottom' for forward and the default 'top' for backward,
+// creating asymmetric flip geometry and the visible book-position jerk.
+function flipForward(){
+ if(pageFlip) pageFlip.flipNext('top');
+}
 // Tap either half of the open book to turn pages; a finger drag remains a normal page-flip.
 let tapStart=null;
 let tapTurnLocked=false;
@@ -144,7 +150,7 @@ book.addEventListener('pointerup',e=>{
  const x=e.clientX-rect.left;
  const current=pageFlip.getCurrentPageIndex();
  if(x>rect.width/2){
-   if(current<groups.length-1)pageFlip.flipNext('bottom');
+   if(current<groups.length-1)flipForward();
    else tapTurnLocked=false;
  }else{
    if(current>0)pageFlip.flipPrev();
@@ -154,12 +160,12 @@ book.addEventListener('pointerup',e=>{
 book.addEventListener('pointercancel',()=>{tapStart=null;},{passive:true});
 
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
-document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext('bottom');
+document.getElementById('next').onclick=()=>flipForward();
 document.addEventListener('keydown',e=>{
  if(['ArrowLeft','ArrowRight'].includes(e.key)){
   e.preventDefault();
   if(!pageFlip)return;
-  e.key==='ArrowRight'?pageFlip.flipNext('bottom'):pageFlip.flipPrev('top');
+  e.key==='ArrowRight'?flipForward():pageFlip.flipPrev('top');
  }
 });
 document.addEventListener('dragstart',e=>e.preventDefault());
@@ -174,9 +180,3 @@ init();
 </script>
 </body>
 </html>
-
-
-
-
-
-
