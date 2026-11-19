@@ -7,27 +7,28 @@
 <title>Interior Design Catalogue</title>
 <style>
 :root{--ink:#263238;--muted:#77818a;--paper:#fff;--accent:#b18b62}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#e9edf0;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#e9edf0;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
 body{overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .top{height:58px;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:3px;font-weight:700;color:#59636b}
 .stage{min-height:calc(100vh - 110px);display:flex;align-items:center;justify-content:center;padding:8px 12px 18px}
 #book{margin:auto}
 .page{background:var(--paper);overflow:hidden;position:relative;display:flex;flex-direction:column}
-.section{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:34px;background:linear-gradient(145deg,#fff 0%,#f3f0eb 100%)}
+.section{height:100%;width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:34px;background:linear-gradient(145deg,#fff 0%,#f3f0eb 100%)}
 .section .eyebrow{font-size:10px;letter-spacing:5px;color:var(--accent);margin-bottom:22px}
 .section h1{font-family:Georgia,serif;font-size:clamp(28px,5vw,46px);line-height:1.15;font-weight:400;letter-spacing:1px;margin:0;text-transform:uppercase}
 .section .line{width:54px;height:2px;background:var(--accent);margin:25px auto}
 .section p{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.gallery{flex:1 1 auto;min-height:0;height:auto;padding:14px 14px 8px;display:flex;flex-direction:column;background:#fff}
-.product{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-.product img{display:block;flex:1 1 auto;min-height:0;height:0;max-width:100%;width:100%;object-fit:contain;background:#fff}
-.caption{font-family:Georgia,serif;font-size:11px;color:#7c7166;letter-spacing:1px;padding:5px 0 2px}
+.gallery{flex:1 1 0;min-height:0;width:100%;padding:14px 14px 8px;display:flex;background:#fff}
+.product{flex:1 1 0;min-height:0;min-width:0;width:100%;display:grid;grid-template-rows:minmax(0,1fr) auto;align-items:center;justify-items:center;overflow:hidden}
+.product img{display:block;width:100%;height:100%;min-height:0;min-width:0;object-fit:contain;object-position:center;background:#fff}
+.caption{font-family:Georgia,serif;font-size:11px;color:#7c7166;letter-spacing:1px;padding:6px 0 2px;text-align:center}
 .footer{height:42px;flex:0 0 42px;position:relative;z-index:1;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:2px;color:#8a8178;text-transform:uppercase}
+.image-error{font-size:12px;color:#a33;text-align:center;padding:12px}
 .controls{height:48px;display:flex;align-items:center;justify-content:center;gap:18px;color:#64717a;font-size:12px}
 .controls button{border:1px solid #cbd1d5;background:white;border-radius:24px;padding:9px 17px;color:#36434b;font-size:12px}
-#counter{min-width:55px;text-align:center}
+#counter{min-width:65px;text-align:center}
 .hint{font-size:10px;color:#929ba1;text-align:center;padding-bottom:12px;letter-spacing:1px}
-.watermark{position:absolute;inset:0;pointer-events:none;opacity:.001}
 @media(max-width:600px){.top{height:42px}.stage{min-height:calc(100dvh - 100px);padding:0 4px 8px}.controls{height:42px}.hint{padding-bottom:6px}}
 </style>
 </head>
@@ -36,7 +37,7 @@ body{overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-c
 <div class="stage"><div id="book"></div></div>
 <div class="controls">
 <button id="prev" aria-label="Previous page">‹ Previous</button>
-<span id="counter">1 / 10</span>
+<span id="counter">1 / 18</span>
 <button id="next" aria-label="Next page">Next ›</button>
 </div>
 <div class="hint">SWIPE OR DRAG THE PAGE CORNER TO TURN</div>
@@ -52,6 +53,26 @@ const groups = [
 ];
 const book=document.getElementById('book');
 let pageFlip;
+
+function makeImage(kind,n){
+ const file=`${kind}-${String(n).padStart(2,'0')}.jpg`;
+ const img=document.createElement('img');
+ img.alt=`${kind} design ${n}`;
+ img.draggable=false;
+ img.src=`./${file}`;
+ img.onerror=function(){
+   if(!this.dataset.triedAssets){
+     this.dataset.triedAssets='yes';
+     this.src=`./assets/${file}`;
+   }else{
+     const note=document.createElement('div');
+     note.className='image-error';
+     note.textContent=`Image not found: ${file}`;
+     this.replaceWith(note);
+   }
+ };
+ return img;
+}
 function renderPages(){
  book.innerHTML='';
  groups.forEach(p=>{
@@ -61,30 +82,65 @@ function renderPages(){
    el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;
   }else{
    const n=p.items[0];
-   const file=`${p.kind}-${String(n).padStart(2,'0')}.jpg`;
-   el.innerHTML=`<div class="gallery"><div class="product"><img draggable="false" src="${file}" alt="${p.kind} design ${n}"><div class="caption">${p.kind.toUpperCase()} DESIGN ${String(n).padStart(2,'0')}</div></div></div><div class="footer">YOUR BRAND NAME</div>`;
+   const product=document.createElement('div');
+   product.className='product';
+   product.appendChild(makeImage(p.kind,n));
+   const caption=document.createElement('div');
+   caption.className='caption';
+   caption.textContent=`${p.kind.toUpperCase()} DESIGN ${String(n).padStart(2,'0')}`;
+   const gallery=document.createElement('div');
+   gallery.className='gallery';
+   product.appendChild(caption);
+   gallery.appendChild(product);
+   el.appendChild(gallery);
+   const footer=document.createElement('div');
+   footer.className='footer';
+   footer.textContent='YOUR BRAND NAME';
+   el.appendChild(footer);
   }
   book.appendChild(el);
  });
 }
 function init(){
+ if(typeof St==='undefined'||!St.PageFlip){
+   document.getElementById('counter').textContent='Flipbook library not loaded';
+   return;
+ }
  if(pageFlip){pageFlip.destroy();pageFlip=null;}
  renderPages();
- pageFlip=new St.PageFlip(book,{width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,minHeight:360,maxHeight:680,showCover:false,usePortrait:true,mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,flippingTime:850,useMouseEvents:true});
+ pageFlip=new St.PageFlip(book,{
+   width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,
+   minHeight:360,maxHeight:680,showCover:false,usePortrait:true,
+   mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,
+   flippingTime:850,useMouseEvents:true
+ });
  pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
- pageFlip.on('flip',e=>document.getElementById('counter').textContent=(e.data+1)+' / '+groups.length);
+ pageFlip.on('flip',e=>{
+   document.getElementById('counter').textContent=(e.data+1)+' / '+groups.length;
+ });
  document.getElementById('counter').textContent='1 / '+groups.length;
 }
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
 document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext();
-document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev()}});
+document.addEventListener('keydown',e=>{
+ if(['ArrowLeft','ArrowRight'].includes(e.key)){
+  e.preventDefault();
+  if(!pageFlip)return;
+  e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev();
+ }
+});
 document.addEventListener('dragstart',e=>e.preventDefault());
 document.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('selectstart',e=>e.preventDefault());
-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(init,250)});
+let resizeTimer;
+window.addEventListener('resize',()=>{
+ clearTimeout(resizeTimer);
+ resizeTimer=setTimeout(init,250);
+});
 init();
 </script>
-</body></html>
+</body>
+</html>
 
 
 
