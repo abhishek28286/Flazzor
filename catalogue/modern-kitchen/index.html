@@ -109,24 +109,55 @@ function init(){
  if(pageFlip){pageFlip.destroy();pageFlip=null;}
  renderPages();
  pageFlip=new St.PageFlip(book,{
-   width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,autoSize:false,
-   minHeight:360,maxHeight:680,showCover:false,usePortrait:false,
-   mobileScrollSupport:false,disableFlipByClick:false,clickEventForward:false,drawShadow:true,maxShadowOpacity:.35,
+   width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,
+   minHeight:360,maxHeight:680,showCover:false,usePortrait:true,
+   mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,
    flippingTime:700,useMouseEvents:true
  });
  pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
  pageFlip.on('flip',e=>{
    document.getElementById('counter').textContent=(e.data+1)+' / '+groups.length;
+   tapTurnLocked=false;
  });
  document.getElementById('counter').textContent='1 / '+groups.length;
 }
+// Tap either half of the open book to turn pages; a finger drag remains a normal page-flip.
+let tapStart=null;
+let tapTurnLocked=false;
+book.addEventListener('pointerdown',e=>{
+ tapStart={x:e.clientX,y:e.clientY};
+},{passive:true});
+book.addEventListener('pointerup',e=>{
+ if(!tapStart||!pageFlip){tapStart=null;return;}
+ const dx=e.clientX-tapStart.x, dy=e.clientY-tapStart.y;
+ tapStart=null;
+ // A movement is a swipe/drag: leave it entirely to the page-flip library.
+ if(Math.hypot(dx,dy)>14)return;
+ // A real tap should not also be interpreted as a browser double-tap or a second library gesture.
+ e.preventDefault();
+ e.stopPropagation();
+ if(tapTurnLocked)return;
+ tapTurnLocked=true;
+ const rect=book.getBoundingClientRect();
+ const x=e.clientX-rect.left;
+ const current=pageFlip.getCurrentPageIndex();
+ if(x>rect.width/2){
+   if(current<groups.length-1)pageFlip.flipNext();
+   else tapTurnLocked=false;
+ }else{
+   if(current>0)pageFlip.flipPrev();
+   else tapTurnLocked=false;
+ }
+},{passive:false});
+book.addEventListener('pointercancel',()=>{tapStart=null;},{passive:true});
+
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
 document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext();
 document.addEventListener('keydown',e=>{
  if(['ArrowLeft','ArrowRight'].includes(e.key)){
   e.preventDefault();
   if(!pageFlip)return;
-  e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev();
+  e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev('top');
  }
 });
 document.addEventListener('dragstart',e=>e.preventDefault());
