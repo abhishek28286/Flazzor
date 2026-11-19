@@ -18,12 +18,9 @@ body{overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-c
 .section h1{font-family:Georgia,serif;font-size:clamp(28px,5vw,46px);line-height:1.15;font-weight:400;letter-spacing:1px;margin:0;text-transform:uppercase}
 .section .line{width:54px;height:2px;background:var(--accent);margin:25px auto}
 .section p{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.gallery{flex:1 1 auto;min-height:0;height:auto;padding:17px 16px 0;display:flex;flex-direction:column;background:#fff}
-.gallery.two{display:grid;grid-template-rows:1fr 1fr;gap:10px}
-.gallery.three{display:grid;grid-template-rows:1fr 1fr 1fr;gap:8px}
-.product{min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-.product img{display:block;max-width:100%;width:100%;height:100%;min-height:0;object-fit:contain;background:#f6f6f4}
-.gallery.two .product img,.gallery.three .product img{object-fit:contain}
+.gallery{flex:1 1 auto;min-height:0;height:auto;padding:14px 14px 8px;display:flex;flex-direction:column;background:#fff}
+.product{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.product img{display:block;flex:1 1 auto;min-height:0;height:0;max-width:100%;width:100%;object-fit:contain;background:#fff}
 .caption{font-family:Georgia,serif;font-size:11px;color:#7c7166;letter-spacing:1px;padding:5px 0 2px}
 .footer{height:42px;flex:0 0 42px;position:relative;z-index:1;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:2px;color:#8a8178;text-transform:uppercase}
 .controls{height:48px;display:flex;align-items:center;justify-content:center;gap:18px;color:#64717a;font-size:12px}
@@ -47,38 +44,36 @@ body{overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-c
 <script>
 const groups = [
  {type:'section',title:'OUR MODULAR KITCHEN DESIGNS',sub:'A COLLECTION OF MODERN KITCHENS'},
- {type:'gallery',kind:'kitchen',items:[1,2,3]},
- {type:'gallery',kind:'kitchen',items:[4,5]},
- {type:'gallery',kind:'kitchen',items:[6,7]},
- {type:'gallery',kind:'kitchen',items:[8,9]},
+ ...Array.from({length:9},(_,i)=>({type:'gallery',kind:'kitchen',items:[i+1]})),
  {type:'section',title:'OUR WARDROBE DESIGNS',sub:'STORAGE WITH STYLE'},
- {type:'gallery',kind:'wardrobe',items:[1,2]},
- {type:'gallery',kind:'wardrobe',items:[3,4]},
+ ...Array.from({length:4},(_,i)=>({type:'gallery',kind:'wardrobe',items:[i+1]})),
  {type:'section',title:'OUR TV UNIT DESIGNS',sub:'CONTEMPORARY LIVING SPACES'},
- {type:'gallery',kind:'tv',items:[1,2]}
+ ...Array.from({length:2},(_,i)=>({type:'gallery',kind:'tv',items:[i+1]}))
 ];
 const book=document.getElementById('book');
-groups.forEach((p,i)=>{
- const el=document.createElement('div'); el.className='page';
- if(p.type==='section'){
-  el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;
- }else{
-  const layout=p.items.length===3?'three':'two';
-  const products=p.items.map((n,j)=>`<div class="product"><img draggable="false" src="${p.kind}-${String(n).padStart(2,'0')}.jpg" alt="${p.kind} design ${n}"><div class="caption">${p.kind.toUpperCase()} DESIGN ${String(n).padStart(2,'0')}</div></div>`).join('');
-  el.innerHTML=`<div class="gallery ${layout}">${products}</div><div class="footer">YOUR BRAND NAME</div>`;
- }
- book.appendChild(el);
-});
 let pageFlip;
+function renderPages(){
+ book.innerHTML='';
+ groups.forEach(p=>{
+  const el=document.createElement('div');
+  el.className='page';
+  if(p.type==='section'){
+   el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;
+  }else{
+   const n=p.items[0];
+   const file=`${p.kind}-${String(n).padStart(2,'0')}.jpg`;
+   el.innerHTML=`<div class="gallery"><div class="product"><img draggable="false" src="${file}" alt="${p.kind} design ${n}"><div class="caption">${p.kind.toUpperCase()} DESIGN ${String(n).padStart(2,'0')}</div></div></div><div class="footer">YOUR BRAND NAME</div>`;
+  }
+  book.appendChild(el);
+ });
+}
 function init(){
- const mobile=window.innerWidth<620;
- const width=mobile?Math.min(window.innerWidth-22,420):480;
- const height=mobile?Math.min(window.innerHeight-145,620):680;
- if(pageFlip){pageFlip.destroy();book.innerHTML='';groups.forEach((p,i)=>{const el=document.createElement('div');el.className='page';if(p.type==='section')el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;else{const layout=p.items.length===3?'three':'two';const products=p.items.map(n=>`<div class="product"><img draggable="false" src="${p.kind}-${String(n).padStart(2,'0')}.jpg" alt="${p.kind} design"></div>`).join('');el.innerHTML=`<div class="gallery ${layout}">${products}</div><div class="footer">YOUR BRAND NAME</div>`;}book.appendChild(el);});}
- pageFlip=new St.PageFlip(book,{width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,minHeight:360,maxHeight:680,showCover:false,usePortrait:true,mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35, flippingTime:850, useMouseEvents:true});
+ if(pageFlip){pageFlip.destroy();pageFlip=null;}
+ renderPages();
+ pageFlip=new St.PageFlip(book,{width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,minHeight:360,maxHeight:680,showCover:false,usePortrait:true,mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,flippingTime:850,useMouseEvents:true});
  pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
- pageFlip.on('flip',e=>document.getElementById('counter').textContent=(e.data+1)+' / 10');
- document.getElementById('counter').textContent='1 / 10';
+ pageFlip.on('flip',e=>document.getElementById('counter').textContent=(e.data+1)+' / '+groups.length);
+ document.getElementById('counter').textContent='1 / '+groups.length;
 }
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
 document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext();
