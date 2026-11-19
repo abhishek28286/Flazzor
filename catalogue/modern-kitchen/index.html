@@ -110,8 +110,10 @@ function init(){
  renderPages();
  pageFlip=new St.PageFlip(book,{
    width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,
-   minHeight:360,maxHeight:680,showCover:false,usePortrait:false,
-   mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,
+   minHeight:360,maxHeight:680,showCover:false,usePortrait:true,
+   // Custom tap handler below performs tap flips; disable PageFlip's duplicate whole-page tap.
+   // Its corner-based drag/swipe handling remains enabled.
+   mobileScrollSupport:false,disableFlipByClick:true,clickEventForward:false,drawShadow:true,maxShadowOpacity:.35,
    flippingTime:700,useMouseEvents:true
  });
  pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
@@ -142,7 +144,7 @@ book.addEventListener('pointerup',e=>{
  const x=e.clientX-rect.left;
  const current=pageFlip.getCurrentPageIndex();
  if(x>rect.width/2){
-   if(current<groups.length-1)pageFlip.flipNext();
+   if(current<groups.length-1)pageFlip.flipNext('bottom');
    else tapTurnLocked=false;
  }else{
    if(current>0)pageFlip.flipPrev();
@@ -152,12 +154,12 @@ book.addEventListener('pointerup',e=>{
 book.addEventListener('pointercancel',()=>{tapStart=null;},{passive:true});
 
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
-document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext();
+document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext('bottom');
 document.addEventListener('keydown',e=>{
  if(['ArrowLeft','ArrowRight'].includes(e.key)){
   e.preventDefault();
   if(!pageFlip)return;
-  e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev('top');
+  e.key==='ArrowRight'?pageFlip.flipNext('bottom'):pageFlip.flipPrev('top');
  }
 });
 document.addEventListener('dragstart',e=>e.preventDefault());
