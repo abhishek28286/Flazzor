@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="Interactive digital interior design catalogue">
+<title>Interior Design Catalogue</title>
+<style>
+:root{--ink:#263238;--muted:#77818a;--paper:#fff;--accent:#b18b62}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#e9edf0;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body{overflow-x:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.top{height:58px;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:3px;font-weight:700;color:#59636b}
+.stage{min-height:calc(100vh - 110px);display:flex;align-items:center;justify-content:center;padding:8px 12px 18px}
+#book{margin:auto}
+.page{background:var(--paper);overflow:hidden;position:relative}
+.section{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:34px;background:linear-gradient(145deg,#fff 0%,#f3f0eb 100%)}
+.section .eyebrow{font-size:10px;letter-spacing:5px;color:var(--accent);margin-bottom:22px}
+.section h1{font-family:Georgia,serif;font-size:clamp(28px,5vw,46px);line-height:1.15;font-weight:400;letter-spacing:1px;margin:0;text-transform:uppercase}
+.section .line{width:54px;height:2px;background:var(--accent);margin:25px auto}
+.section p{font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.gallery{height:100%;padding:17px 16px 0;display:flex;flex-direction:column;background:#fff}
+.gallery.two{display:grid;grid-template-rows:1fr 1fr;gap:10px}
+.gallery.three{display:grid;grid-template-rows:1fr 1fr 1fr;gap:8px}
+.product{min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.product img{display:block;max-width:100%;width:100%;height:100%;min-height:0;object-fit:contain;background:#f6f6f4}
+.gallery.two .product img,.gallery.three .product img{object-fit:contain}
+.caption{font-family:Georgia,serif;font-size:11px;color:#7c7166;letter-spacing:1px;padding:5px 0 2px}
+.footer{height:42px;flex:0 0 42px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:2px;color:#8a8178;text-transform:uppercase}
+.controls{height:48px;display:flex;align-items:center;justify-content:center;gap:18px;color:#64717a;font-size:12px}
+.controls button{border:1px solid #cbd1d5;background:white;border-radius:24px;padding:9px 17px;color:#36434b;font-size:12px}
+#counter{min-width:55px;text-align:center}
+.hint{font-size:10px;color:#929ba1;text-align:center;padding-bottom:12px;letter-spacing:1px}
+.watermark{position:absolute;inset:0;pointer-events:none;opacity:.001}
+@media(max-width:600px){.top{height:42px}.stage{min-height:calc(100dvh - 100px);padding:0 4px 8px}.controls{height:42px}.hint{padding-bottom:6px}}
+</style>
+</head>
+<body oncontextmenu="return false">
+<div class="top">DIGITAL INTERIOR COLLECTION</div>
+<div class="stage"><div id="book"></div></div>
+<div class="controls">
+<button id="prev" aria-label="Previous page">‹ Previous</button>
+<span id="counter">1 / 10</span>
+<button id="next" aria-label="Next page">Next ›</button>
+</div>
+<div class="hint">SWIPE OR DRAG THE PAGE CORNER TO TURN</div>
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+<script>
+const groups = [
+ {type:'section',title:'OUR MODULAR KITCHEN DESIGNS',sub:'A COLLECTION OF MODERN KITCHENS'},
+ {type:'gallery',kind:'kitchen',items:[1,2,3]},
+ {type:'gallery',kind:'kitchen',items:[4,5]},
+ {type:'gallery',kind:'kitchen',items:[6,7]},
+ {type:'gallery',kind:'kitchen',items:[8,9]},
+ {type:'section',title:'OUR WARDROBE DESIGNS',sub:'STORAGE WITH STYLE'},
+ {type:'gallery',kind:'wardrobe',items:[1,2]},
+ {type:'gallery',kind:'wardrobe',items:[3,4]},
+ {type:'section',title:'OUR TV UNIT DESIGNS',sub:'CONTEMPORARY LIVING SPACES'},
+ {type:'gallery',kind:'tv',items:[1,2]}
+];
+const book=document.getElementById('book');
+groups.forEach((p,i)=>{
+ const el=document.createElement('div'); el.className='page';
+ if(p.type==='section'){
+  el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;
+ }else{
+  const layout=p.items.length===3?'three':'two';
+  const products=p.items.map((n,j)=>`<div class="product"><img draggable="false" src="assets/${p.kind}-${String(n).padStart(2,'0')}.jpg" alt="${p.kind} design ${n}"><div class="caption">${p.kind.toUpperCase()} DESIGN ${String(n).padStart(2,'0')}</div></div>`).join('');
+  el.innerHTML=`<div class="gallery ${layout}">${products}</div><div class="footer">YOUR BRAND NAME</div><div class="watermark"></div>`;
+ }
+ book.appendChild(el);
+});
+let pageFlip;
+function init(){
+ const mobile=window.innerWidth<620;
+ const width=mobile?Math.min(window.innerWidth-22,420):480;
+ const height=mobile?Math.min(window.innerHeight-145,620):680;
+ if(pageFlip){pageFlip.destroy();book.innerHTML='';groups.forEach((p,i)=>{const el=document.createElement('div');el.className='page';if(p.type==='section')el.innerHTML=`<div class="section"><div class="eyebrow">INTERIOR DESIGN COLLECTION</div><h1>${p.title}</h1><div class="line"></div><p>${p.sub}</p></div>`;else{const layout=p.items.length===3?'three':'two';const products=p.items.map(n=>`<div class="product"><img draggable="false" src="assets/${p.kind}-${String(n).padStart(2,'0')}.jpg" alt="${p.kind} design"></div>`).join('');el.innerHTML=`<div class="gallery ${layout}">${products}</div><div class="footer">YOUR BRAND NAME</div>`;}book.appendChild(el);});}
+ pageFlip=new St.PageFlip(book,{width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,minHeight:360,maxHeight:680,showCover:false,usePortrait:true,mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35, flippingTime:850, useMouseEvents:true});
+ pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
+ pageFlip.on('flip',e=>document.getElementById('counter').textContent=(e.data+1)+' / 10');
+ document.getElementById('counter').textContent='1 / 10';
+}
+document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
+document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext();
+document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();e.key==='ArrowRight'?pageFlip.flipNext():pageFlip.flipPrev()}});
+document.addEventListener('dragstart',e=>e.preventDefault());
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('selectstart',e=>e.preventDefault());
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(init,250)});
+init();
+</script>
+</body></html>
+
+
+
+
+
+
