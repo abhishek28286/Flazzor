@@ -111,7 +111,7 @@ function init(){
  pageFlip=new St.PageFlip(book,{
    width:480,height:680,size:'stretch',minWidth:260,maxWidth:480,
    minHeight:360,maxHeight:680,showCover:false,usePortrait:true,
-   mobileScrollSupport:false,drawShadow:true,maxShadowOpacity:.35,
+   mobileScrollSupport:false,disableFlipByClick:true,clickEventForward:false,drawShadow:true,maxShadowOpacity:.35,
    flippingTime:700,useMouseEvents:true
  });
  pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
@@ -142,7 +142,7 @@ book.addEventListener('pointerup',e=>{
  const x=e.clientX-rect.left;
  const current=pageFlip.getCurrentPageIndex();
  if(x>rect.width/2){
-   if(current<groups.length-1)pageFlip.flipNext('bottom');
+   if(current<groups.length-1)pageFlip.flipNext('top');
    else tapTurnLocked=false;
  }else{
    if(current>0)pageFlip.flipPrev();
@@ -152,12 +152,12 @@ book.addEventListener('pointerup',e=>{
 book.addEventListener('pointercancel',()=>{tapStart=null;},{passive:true});
 
 document.getElementById('prev').onclick=()=>pageFlip&&pageFlip.flipPrev();
-document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext('bottom');
+document.getElementById('next').onclick=()=>pageFlip&&pageFlip.flipNext('top');
 document.addEventListener('keydown',e=>{
  if(['ArrowLeft','ArrowRight'].includes(e.key)){
   e.preventDefault();
   if(!pageFlip)return;
-  e.key==='ArrowRight'?pageFlip.flipNext('bottom'):pageFlip.flipPrev('top');
+  e.key==='ArrowRight'?pageFlip.flipNext('top'):pageFlip.flipPrev('top');
  }
 });
 document.addEventListener('dragstart',e=>e.preventDefault());
